@@ -1,25 +1,55 @@
 from fastapi import APIRouter, HTTPException
 from starlette import status
-from src.routes.memory import get_station, set_last_played, get_last_played
-from src.routes.player import play_radio
-
+from src.routes.memory import get_wifi
+import os
 
 router = APIRouter(
     prefix="/controls",
     tags=["Controls"]
 )
 
-@router.post("/play/{station_id}", status_code=status.HTTP_200_OK)
-async def play_station(station_id: int):
-    station = await get_station(station_id)
+@router.get("/connect_to_wifi", status_code=status.HTTP_200_OK)
+async def connect_to_wifi():
+    await deactivate_hotspot()
+    wifi = await get_wifi()
+    
+    if wifi is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No wifi credentials found")
+    
+    try:    
+        wifi_status =   os.system(f"nmcli dev wifi connect {wifi['ssid']} password {wifi['password']}")
+        
+        if wifi_status != 0:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Failed to connect to wifi")
+        
+        return {"message": f"Pi connected to wifi {wifi['ssid']}"}
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
-    if station is None:
-        raise HTTPException(status_code=404, detail="Station not found")
+@router.get("/activate_hotspot", status_code=status.HTTP_200_OK)
+async def activate_hotspot():
+    try:
+        # Stop the NetworkManager service to prevent interference
+        os.system("sudo systemctl stop NetworkManager")
+        
+        # Configure the wireless interface as an access point
+        os.system("sudo nmcli device wifi hotspot ifname wlan0 ssid station-nanna")
+        
+        # Start NetworkManager again
+        os.system("sudo systemctl start NetworkManager")
+        
+        return {"message": "Hotspot created successfully with SSID: station-nanna"}
+    except Exception as e:
+        # Ensure NetworkManager is restarted even if there's an error
+        os.system("sudo systemctl start NetworkManager")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
-    await set_last_played(station_id)
-    await play_radio(station["url"])
-
-@router.post("/play_last_played", status_code=status.HTTP_200_OK)
-async def play_last_played():
-    last_played = await get_last_played()
-    await play_radio(last_played["url"])
+@router.get("/deactivate_hotspot", status_code=status.HTTP_200_OK)
+async def deactivate_hotspot():
+    try:
+        # Stop the hotspot by restarting NetworkManager
+        os.system("sudo systemctl restart NetworkManager")
+            
+        return {"message": f"Hotspot deactivated"}
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))

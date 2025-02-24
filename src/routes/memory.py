@@ -10,7 +10,6 @@ router = APIRouter(
 )
 
 
-
 def read_data():
     data_file = Path("src/data.json")
     with open(data_file, "r") as f:
@@ -45,3 +44,17 @@ async def get_last_played():
         raise HTTPException(status_code=404, detail="No station played yet")
     
     return await get_station(data["last_played"])
+
+@router.get("/wifi", status_code=status.HTTP_200_OK)
+async def get_wifi():
+    data = read_data()
+    
+    if not data["wifi"]:
+        raise HTTPException(status_code=404, detail="No wifi credentials found")
+    
+    wifi = data["wifi"][0]  # Get the first (and only) wifi config
+    
+    if wifi["ssid"] == 'SSID' or wifi["password"] == 'PASSWORD':
+        raise HTTPException(status_code=404, detail="Default credentials found, please set your own")
+    
+    return wifi
