@@ -1,4 +1,5 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
+from starlette import status
 import vlc
 from fastapi.responses import JSONResponse
 import time
@@ -14,7 +15,7 @@ router = APIRouter(
 instance = vlc.Instance('--no-video')  # Audio only, no video output needed
 player = instance.media_player_new()
 
-@router.post("/play/{station_url:path}")
+@router.post("/play/{station_url:path}", status_code=status.HTTP_200_OK)
 async def play_radio(station_url: str):
     try:
         # Decode the URL properly
@@ -25,32 +26,21 @@ async def play_radio(station_url: str):
         # Give VLC a moment to start playing and catch immediate errors
         time.sleep(1)
         if player.get_state() == vlc.State.Error:
-            raise Exception("Failed to play stream")
-        return JSONResponse(
-            content={"message": f"Now playing station: {decoded_url}"},
-            status_code=200
-        )
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Failed to play stream")
+        return {"message": f"Now playing station: {decoded_url}"}
     except Exception as e:
-        return JSONResponse(
-            content={"error": str(e)},
-            status_code=400
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
-@router.get("/stop")
+
+@router.get("/stop", status_code=status.HTTP_200_OK)
 async def stop_radio():
     try:
         player.stop()
-        return JSONResponse(
-            content={"message": "Radio stopped"},
-            status_code=200
-        )
+        return {"message": "Radio stopped"}
     except Exception as e:
-        return JSONResponse(
-            content={"error": str(e)},
-            status_code=400
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
-@router.get("/status")
+@router.get("/status", status_code=status.HTTP_200_OK)
 async def get_status():
     try:
         state = player.get_state()
@@ -64,12 +54,7 @@ async def get_status():
             vlc.State.Ended: "Ended",
             vlc.State.Error: "Error"
         }
-        return JSONResponse(
-            content={"status": states.get(state, "Unknown")},
-            status_code=200
-        )
+        return {"status": states.get(state, "Unknown")}
     except Exception as e:
-        return JSONResponse(
-            content={"error": str(e)},
-            status_code=400
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
