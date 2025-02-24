@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 import json
 from pathlib import Path
 
@@ -25,7 +25,7 @@ async def get_station(station_id: int):
     data = read_data()
     station = next((s for s in data["stations"] if s["id"] == station_id), None)
     if station is None:
-        return {"error": "Station not found"}, 404
+        raise HTTPException(status_code=404, detail="Station not found")
     return station
 
 @router.patch("/last-played/{station_id}")
@@ -39,4 +39,8 @@ async def set_last_played(station_id: int):
 @router.get("/last-played")
 async def get_last_played():
     data = read_data()
+    
+    if data["last_played"] is None:
+        raise HTTPException(status_code=404, detail="No station played yet")
+    
     return await get_station(data["last_played"])
