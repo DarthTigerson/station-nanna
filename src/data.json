@@ -1,1 +1,31 @@
-{"stations": [{"id": 1, "name": "One Radio", "url": "https://s10.voscast.com:8203/stream"}, {"id": 2, "name": "Bay Radio", "url": "https://stream.v3.network/proxy/897bay/stream"}, {"id": 3, "name": "Smash Radio", "url": "https://radio.smashmalta.com/stream"}, {"id": 4, "name": "Radio 4", "url": "http://radio4.com/stream"}], "last_played": 1}
+{
+  "stations": [
+    {
+      "id": 1,
+      "name": "One Radio", 
+      "url": "https://s10.voscast.com:8203/stream"
+    },
+    {
+      "id": 2,
+      "name": "Bay Radio",
+      "url": "https://stream.v3.network/proxy/897bay/stream"
+    },
+    {
+      "id": 3, 
+      "name": "Smash Radio",
+      "url": "https://radio.smashmalta.com/stream"
+    },
+    {
+      "id": 4,
+      "name": "Vibe FM",
+      "url": "https://s9.voscast.com:7825/1"
+    }
+  ],
+  "last_played": null,
+  "wifi": [
+    {
+      "ssid": "SSID",
+      "password": "PASSWORD"
+    }
+  ]
+}

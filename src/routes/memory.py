@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException
+from starlette import status
 import json
 from pathlib import Path
 
@@ -15,12 +16,12 @@ def read_data():
     with open(data_file, "r") as f:
         return json.load(f)
 
-@router.get("/stations")
+@router.get("/stations", status_code=status.HTTP_200_OK)
 async def get_stations():
     data = read_data()
     return data["stations"]
 
-@router.get("/stations/{station_id}")
+@router.get("/stations/{station_id}", status_code=status.HTTP_200_OK)
 async def get_station(station_id: int):
     data = read_data()
     station = next((s for s in data["stations"] if s["id"] == station_id), None)
@@ -28,15 +29,15 @@ async def get_station(station_id: int):
         raise HTTPException(status_code=404, detail="Station not found")
     return station
 
-@router.patch("/last-played/{station_id}")
+@router.patch("/last-played/{station_id}", status_code=status.HTTP_200_OK)
 async def set_last_played(station_id: int):
     data = read_data()
     data["last_played"] = station_id
     with open("src/data.json", "w") as f:
         json.dump(data, f)
-    return {"message": "Last played station updated"}, 200
+    return {"message": "Last played station updated"}
 
-@router.get("/last-played")
+@router.get("/last-played", status_code=status.HTTP_200_OK)
 async def get_last_played():
     data = read_data()
     
