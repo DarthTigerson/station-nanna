@@ -6,7 +6,7 @@ authors = [
     {name = "Thomas Bonnici", email = "thomas.bonnici@icloud.com"},
 ]
 dependencies = ["fastapi>=0.115.8", "SQLAlchemy>=2.0.38", "uvicorn>=0.34.0", "python-vlc>=3.0.21203"]
-requires-python = "==3.12.*"
+requires-python = "==3.11.*"
 readme = "README.md"
 license = {text = "MIT"}
 
@@ -15,5 +15,5 @@ license = {text = "MIT"}
 distribution = false
 
 [tool.pdm.scripts]
-start = "uvicorn src.main:app --reload"
+start = "uvicorn src.main:app --reload --host 0.0.0.0"
 

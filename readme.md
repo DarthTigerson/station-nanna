@@ -2,7 +2,7 @@
 ```bash
 git clone git@github.com:DarthTigerson/station-nanna.git
 cd station-nanna
-./scripts/setup.sh
+sudo bash scripts/setup.sh
 ```
 
 # How to run
